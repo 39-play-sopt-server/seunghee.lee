@@ -49,8 +49,9 @@ public class Main {
                     for (int i = 0; i < posts.size(); i++) {
                         Post currentPost = posts.get(i);
 
+                        // 게시글 데이터에 직접 접근하지 않고 Post의 조회 메서드를 사용한다.
                         System.out.println(
-                                (i + 1) + ". " + currentPost.title
+                                (i + 1) + ". " + currentPost.getTitle()
                         );
                     }
                     break;
@@ -73,8 +74,9 @@ public class Main {
                     Post readPost = posts.get(readIndex);
 
                     System.out.println("\n=== 게시글 ===");
-                    System.out.println("제목: " + readPost.title);
-                    System.out.println("내용: " + readPost.content);
+                    // 게시글의 상태 조회도 Post가 공개한 메서드를 통해 수행한다.
+                    System.out.println("제목: " + readPost.getTitle());
+                    System.out.println("내용: " + readPost.getContent());
                     break;
 
                 case 4:
@@ -100,8 +102,8 @@ public class Main {
                     System.out.print("새로운 내용: ");
                     String newContent = scanner.nextLine();
 
-                    updatePost.title = newTitle;
-                    updatePost.content = newContent;
+                    // Main이 필드를 직접 바꾸지 않고, 변경 책임을 Post에 위임한다.
+                    updatePost.update(newTitle, newContent);
 
                     System.out.println("게시글이 수정되었습니다.");
                     break;
