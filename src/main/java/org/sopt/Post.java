@@ -5,13 +5,13 @@ public class Post {
     private String title;
     private String content;
 
-    // 생성자
+    // 초기 생성자
     public Post(String title, String content) {
         this.title = title;
         this.content = content;
     }
 
-    // 공개 필드로 접근 가능하게 구현
+    // 공개 필드
     public String getTitle() {
         return title;
     }
@@ -20,7 +20,7 @@ public class Post {
         return content;
     }
 
-    // 공개 메서드 구현
+    // 필드의 변경 책임을 Model인 Post가 가짐
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
