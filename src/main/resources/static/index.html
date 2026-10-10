@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLAY SERVER 39 · 게시판</title>
+    <style>
+        :root { --ink:#172033; --muted:#7d879a; --line:#e8ebf1; --mint:#61e6c0; --blue:#6274f5; --soft:#f5f7fb; }
+        * { box-sizing:border-box; }
+        body { margin:0; color:var(--ink); background:var(--soft); font-family:Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .shell { max-width:1100px; margin:0 auto; padding:28px 22px 70px; }
+        header { display:flex; align-items:center; justify-content:space-between; margin-bottom:46px; }
+        .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.04em; font-size:20px; }
+        .mark { display:grid; place-items:center; width:38px; height:38px; color:#172033; border-radius:13px; background:linear-gradient(135deg,var(--mint),#b1ffe9); font-size:19px; }
+        .status { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+        .dot { width:8px; height:8px; border-radius:50%; background:#36d39b; box-shadow:0 0 0 5px #dff8ee; }
+        .hero { display:flex; align-items:end; justify-content:space-between; gap:28px; margin-bottom:30px; }
+        h1 { margin:0 0 10px; font-size:clamp(32px,5vw,56px); line-height:1; letter-spacing:-.07em; }
+        .subtitle { margin:0; color:var(--muted); font-size:15px; }
+        .write-button { border:0; border-radius:14px; padding:14px 20px; color:white; background:var(--ink); font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 8px 18px #17203320; }
+        .write-button:hover { transform:translateY(-1px); background:#2b3852; }
+        .panel { overflow:hidden; background:white; border:1px solid var(--line); border-radius:22px; box-shadow:0 18px 45px #1720330a; }
+        .toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px 24px; border-bottom:1px solid var(--line); }
+        .filters { display:flex; gap:8px; flex-wrap:wrap; }
+        .filter { border:1px solid var(--line); border-radius:99px; padding:8px 13px; color:var(--muted); background:white; cursor:pointer; font-size:12px; }
+        .filter.active, .filter:hover { color:var(--ink); border-color:var(--ink); background:#f1f3f8; }
+        .count { color:var(--muted); font-size:13px; white-space:nowrap; }
+        .posts { display:grid; grid-template-columns:repeat(2,1fr); gap:0; }
+        .post { padding:25px 24px; border-bottom:1px solid var(--line); cursor:pointer; transition:background .2s; }
+        .post:nth-child(odd) { border-right:1px solid var(--line); }
+        .post:hover { background:#fbfcff; }
+        .meta { display:flex; align-items:center; gap:9px; margin-bottom:14px; color:var(--muted); font-size:12px; }
+        .tag { padding:5px 8px; color:#3b50cc; border-radius:6px; background:#eef0ff; font-weight:700; }
+        .post h2 { overflow:hidden; margin:0 0 8px; font-size:19px; letter-spacing:-.04em; text-overflow:ellipsis; white-space:nowrap; }
+        .preview { overflow:hidden; margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.6; text-overflow:ellipsis; white-space:nowrap; }
+        .author { color:var(--ink); font-size:12px; font-weight:600; }
+        .empty { grid-column:1/-1; padding:80px 20px; color:var(--muted); text-align:center; }
+        dialog { width:min(92vw,560px); padding:0; border:0; border-radius:22px; box-shadow:0 25px 80px #17203335; }
+        dialog::backdrop { background:#17203370; backdrop-filter:blur(4px); }
+        .dialog-head { display:flex; justify-content:space-between; padding:24px 26px; border-bottom:1px solid var(--line); }
+        .dialog-head h2 { margin:0; font-size:20px; letter-spacing:-.04em; }
+        .close { border:0; color:var(--muted); background:none; font-size:24px; cursor:pointer; }
+        form { padding:24px 26px 26px; }
+        label { display:block; margin:0 0 7px; font-size:13px; font-weight:700; }
+        input, textarea, select { width:100%; margin-bottom:18px; padding:13px 14px; border:1px solid var(--line); border-radius:11px; outline:0; color:var(--ink); font:inherit; }
+        textarea { min-height:130px; resize:vertical; }
+        input:focus, textarea:focus, select:focus { border-color:var(--blue); box-shadow:0 0 0 4px #6274f51a; }
+        .submit { width:100%; padding:14px; border:0; border-radius:12px; color:white; background:var(--blue); font-weight:700; cursor:pointer; }
+        .toast { position:fixed; right:22px; bottom:22px; display:none; padding:13px 16px; border-radius:12px; color:white; background:var(--ink); font-size:13px; box-shadow:0 10px 25px #17203330; }
+        @media (max-width:700px) { .hero { align-items:start; flex-direction:column; } .posts { grid-template-columns:1fr; } .post:nth-child(odd) { border-right:0; } .toolbar { align-items:start; flex-direction:column; } }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <header>
+        <div class="brand"><span class="mark">▶</span> PLAY SERVER <span style="color:#42cfae">39</span></div>
+        <div class="status"><span class="dot"></span> SERVER ONLINE</div>
+    </header>
+
+    <section class="hero">
+        <div><h1>이 승 희 </h1><p class="subtitle">배고프다</p></div>
+        <button class="write-button" id="openForm">＋ 새 게시글</button>
+    </section>
+
+    <section class="panel">
+        <div class="toolbar"><div class="filters" id="filters"><button class="filter active" data-category="ALL">전체</button><button class="filter" data-category="NOTICE">공지</button><button class="filter" data-category="FREE">자유</button><button class="filter" data-category="QUESTION">질문</button><button class="filter" data-category="INFORMATION">정보</button></div><span class="count" id="count">게시글을 불러오는 중...</span></div>
+        <div class="posts" id="posts"></div>
+    </section>
+</main>
+
+<dialog id="postDialog">
+    <div class="dialog-head"><h2>새 게시글 작성</h2><button class="close" id="closeForm">×</button></div>
+    <form id="postForm">
+        <label for="title">제목</label><input id="title" required maxlength="100" placeholder="제목을 입력해주세요">
+        <label for="content">본문</label><textarea id="content" required placeholder="이야기를 들려주세요"></textarea>
+        <label for="author">작성자</label><input id="author" required maxlength="30" placeholder="이름을 입력해주세요">
+        <label for="category">카테고리</label><select id="category"><option value="FREE">자유</option><option value="QUESTION">질문</option><option value="INFORMATION">정보</option><option value="NOTICE">공지</option></select>
+        <button class="submit">게시글 등록하기</button>
+    </form>
+</dialog>
+<div class="toast" id="toast"></div>
+<script>
+    const posts = document.querySelector('#posts'), count = document.querySelector('#count'), dialog = document.querySelector('#postDialog'), toast = document.querySelector('#toast');
+    let selected = 'ALL', cache = [];
+    const labels = { NOTICE:'공지', FREE:'자유', QUESTION:'질문', INFORMATION:'정보' };
+    const notify = message => { toast.textContent = message; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 2600); };
+    const formatDate = value => value ? new Date(value).toLocaleDateString('ko-KR') : '';
+    function render() {
+        const visible = selected === 'ALL' ? cache : cache.filter(post => post.category === selected);
+        count.textContent = `${visible.length}개의 게시글`;
+        posts.innerHTML = visible.length ? visible.map(post => `<article class="post"><div class="meta"><span class="tag">${labels[post.category] || post.category}</span><span>${formatDate(post.createdAt)}</span></div><h2>${escapeHtml(post.title)}</h2><p class="preview">${escapeHtml(post.content)}</p><span class="author">by ${escapeHtml(post.author)}</span></article>`).join('') : '<div class="empty">아직 작성된 게시글이 없습니다.<br>첫 번째 이야기를 남겨보세요.</div>';
+    }
+    const escapeHtml = text => String(text ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    async function loadPosts() { try { const response = await fetch('/posts'); if (!response.ok) throw new Error(); cache = await response.json(); render(); } catch { count.textContent = '연결할 수 없습니다'; posts.innerHTML = '<div class="empty">서버가 실행 중인지 확인해주세요.</div>'; } }
+    document.querySelector('#filters').addEventListener('click', event => { if (!event.target.matches('.filter')) return; document.querySelectorAll('.filter').forEach(button => button.classList.remove('active')); event.target.classList.add('active'); selected = event.target.dataset.category; render(); });
+    document.querySelector('#openForm').onclick = () => dialog.showModal();
+    document.querySelector('#closeForm').onclick = () => dialog.close();
+    document.querySelector('#postForm').onsubmit = async event => { event.preventDefault(); const body = { title:title.value.trim(), content:content.value.trim(), author:author.value.trim(), category:category.value }; try { const response = await fetch('/posts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }); if (!response.ok) { const error = await response.json(); throw new Error(error.message || '등록에 실패했습니다.'); } event.target.reset(); dialog.close(); notify('게시글이 등록되었습니다.'); await loadPosts(); } catch (error) { notify(error.message); } };
+    loadPosts();
+</script>
+</body>
+</html>
