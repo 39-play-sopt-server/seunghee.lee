@@ -1,55 +1,51 @@
 package org.sopt;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/posts")
 public class PostController {
-    private final PostService service;
-    private final PostView view;
+    private final PostService postService;
 
-    public PostController(PostService service, PostView view) {
-        this.service = service;
-        this.view = view;
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
-    public void run() {
-        while (true) {
-            try {
-                view.printMenu();
-                int command = view.readCommand();
-                switch (command) {
-                    case 1 -> createPost();
-                    case 2 -> view.printPosts(service.findAll());
-                    case 3 -> readPost();
-                    case 4 -> updatePost();
-                    case 5 -> deletePost();
-                    case 6 -> { view.printMessage("프로그램을 종료합니다."); return; }
-                    default -> view.printMessage("잘못된 입력입니다.");
-                }
-            } catch (NumberFormatException exception) {
-                view.printMessage("숫자 형식의 입력을 사용해주세요.");
-            } catch (PostNotFoundException | InvalidPostException exception) {
-                view.printMessage(exception.getMessage());
-            }
-        }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Post create(@RequestBody PostRequest request) {
+        return postService.create(request);
     }
 
-    private void createPost() {
-        service.create(view.readTitle(), view.readContent(), view.readAuthor(), view.readCategory());
-        view.printMessage("게시글이 작성되었습니다.");
+    @GetMapping
+    public List<Post> findAll() {
+        return postService.findAll();
     }
 
-    private void readPost() {
-        Long id = view.readPostId("조회할 게시글 번호: ");
-        view.printPost(service.findById(id));
+    @GetMapping("/{id}")
+    public Post findById(@PathVariable Long id) {
+        return postService.findById(id);
     }
 
-    private void updatePost() {
-        Long id = view.readPostId("수정할 게시글 번호: ");
-        service.update(id, view.readTitle(), view.readContent(), view.readCategory());
-        view.printMessage("게시글이 수정되었습니다.");
+    @PutMapping("/{id}")
+    public Post update(@PathVariable Long id, @RequestBody PostRequest request) {
+        return postService.update(id, request);
     }
 
-    private void deletePost() {
-        Long id = view.readPostId("삭제할 게시글 번호: ");
-        service.delete(id);
-        view.printMessage("게시글이 삭제되었습니다.");
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        postService.delete(id);
     }
 }

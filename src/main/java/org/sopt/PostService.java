@@ -2,32 +2,29 @@ package org.sopt;
 
 import java.util.List;
 
-// Service 계층: 게시글과 관련된 비즈니스 흐름을 담당한다.
+import org.springframework.stereotype.Service;
+
+@Service
 public class PostService {
-    private final PostRepository repository;
+    private final PostRepository postRepository;
 
-    public PostService(PostRepository repository) {
-        this.repository = repository;
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
     }
 
-    public void create(String title, String content, String author, Category category) {
-        repository.save(new Post(title, content, author, category));
+    public Post create(PostRequest request) {
+        Post post = new Post(request.title(), request.content(), request.author(), request.category());
+        return postRepository.save(post);
     }
 
-    public List<Post> findAll() {
-        return repository.findAll();
+    public List<Post> findAll() { return postRepository.findAll(); }
+    public Post findById(Long id) { return postRepository.findById(id); }
+
+    public Post update(Long id, PostRequest request) {
+        Post post = postRepository.findById(id);
+        post.update(request.title(), request.content(), request.category());
+        return post;
     }
 
-    public Post findById(Long id) {
-        return repository.findById(id);
-    }
-
-    public void update(Long id, String title, String content, Category category) {
-        Post post = repository.findById(id);
-        post.update(title, content, category);
-    }
-
-    public void delete(Long id) {
-        repository.delete(id);
-    }
+    public void delete(Long id) { postRepository.delete(id); }
 }

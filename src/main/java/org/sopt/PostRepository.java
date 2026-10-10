@@ -1,29 +1,30 @@
 package org.sopt;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-// Repository 계층: 게시글의 저장·조회·삭제만 담당한다.
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class PostRepository {
-    private final List<Post> posts = new ArrayList<>();
+    private final Map<Long, Post> posts = new ConcurrentHashMap<>();
 
-    public void save(Post post) {
-        posts.add(post);
+    public Post save(Post post) {
+        posts.put(post.getId(), post);
+        return post;
     }
 
-    public List<Post> findAll() {
-        return Collections.unmodifiableList(posts);
-    }
+    public List<Post> findAll() { return new ArrayList<>(posts.values()); }
 
     public Post findById(Long id) {
-        return posts.stream()
-                .filter(post -> post.getId().equals(id))
-                .findFirst()
-                .orElseThrow(PostNotFoundException::new);
+        Post post = posts.get(id);
+        if (post == null) throw new PostNotFoundException();
+        return post;
     }
 
     public void delete(Long id) {
-        posts.remove(findById(id));
+        if (posts.remove(id) == null) throw new PostNotFoundException();
     }
 }
