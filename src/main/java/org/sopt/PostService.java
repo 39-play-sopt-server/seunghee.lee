@@ -1,6 +1,7 @@
 package org.sopt;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,17 @@ public class PostService {
     }
 
     public List<Post> findAll() { return postRepository.findAll(); }
+
+    public List<Post> search(PostSearchCondition condition) {
+        return postRepository.findAll().stream()
+                .filter(post -> condition.getKeyword() == null
+                        || condition.getKeyword().isBlank()
+                        || post.getTitle().contains(condition.getKeyword())
+                        || post.getContent().contains(condition.getKeyword()))
+                .filter(post -> condition.getCategory() == null
+                        || post.getCategory() == condition.getCategory())
+                .collect(Collectors.toList());
+    }
     public Post findById(Long id) { return postRepository.findById(id); }
 
     public Post update(Long id, PostRequest request) {
@@ -27,4 +39,10 @@ public class PostService {
     }
 
     public void delete(Long id) { postRepository.delete(id); }
+
+    public Post updateCategory(Long id, Category category) {
+        Post post = postRepository.findById(id);
+        post.update(post.getTitle(), post.getContent(), category);
+        return post;
+    }
 }
