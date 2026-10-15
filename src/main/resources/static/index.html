@@ -88,14 +88,14 @@
     function render() {
         const visible = selected === 'ALL' ? cache : cache.filter(post => post.category === selected);
         count.textContent = `${visible.length}개의 게시글`;
-        posts.innerHTML = visible.length ? visible.map(post => `<article class="post"><div class="meta"><span class="tag">${labels[post.category] || post.category}</span><span>${formatDate(post.createdAt)}</span></div><h2>${escapeHtml(post.title)}</h2><p class="preview">${escapeHtml(post.content)}</p><span class="author">by ${escapeHtml(post.author)}</span></article>`).join('') : '<div class="empty">아직 작성된 게시글이 없습니다.<br>첫 번째 이야기를 남겨보세요.</div>';
+        posts.innerHTML = visible.length ? visible.map(post => `<article class="post"><div class="meta"><span class="tag">${labels[post.category] || post.category}</span><span>${formatDate(post.createdAt)}</span><span>조회 ${post.viewCount}</span></div><h2>${escapeHtml(post.title)}</h2><p class="preview">${escapeHtml(post.content)}</p><span class="author">by ${escapeHtml(post.author)}</span></article>`).join('') : '<div class="empty">아직 작성된 게시글이 없습니다.<br>첫 번째 이야기를 남겨보세요.</div>';
     }
     const escapeHtml = text => String(text ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    async function loadPosts() { try { const response = await fetch('/posts'); if (!response.ok) throw new Error(); cache = await response.json(); render(); } catch { count.textContent = '연결할 수 없습니다'; posts.innerHTML = '<div class="empty">서버가 실행 중인지 확인해주세요.</div>'; } }
+    async function loadPosts() { try { const response = await fetch('/posts'); if (!response.ok) throw new Error(); const result = await response.json(); cache = result.data || []; render(); } catch { count.textContent = '연결할 수 없습니다'; posts.innerHTML = '<div class="empty">서버가 실행 중인지 확인해주세요.</div>'; } }
     document.querySelector('#filters').addEventListener('click', event => { if (!event.target.matches('.filter')) return; document.querySelectorAll('.filter').forEach(button => button.classList.remove('active')); event.target.classList.add('active'); selected = event.target.dataset.category; render(); });
     document.querySelector('#openForm').onclick = () => dialog.showModal();
     document.querySelector('#closeForm').onclick = () => dialog.close();
-    document.querySelector('#postForm').onsubmit = async event => { event.preventDefault(); const body = { title:title.value.trim(), content:content.value.trim(), author:author.value.trim(), category:category.value }; try { const response = await fetch('/posts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }); if (!response.ok) { const error = await response.json(); throw new Error(error.message || '등록에 실패했습니다.'); } event.target.reset(); dialog.close(); notify('게시글이 등록되었습니다.'); await loadPosts(); } catch (error) { notify(error.message); } };
+    document.querySelector('#postForm').onsubmit = async event => { event.preventDefault(); const body = { title:title.value.trim(), content:content.value.trim(), author:author.value.trim(), category:category.value }; try { const response = await fetch('/posts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }); const result = await response.json(); if (!response.ok) throw new Error(result.message || '등록에 실패했습니다.'); event.target.reset(); dialog.close(); notify(result.message); await loadPosts(); } catch (error) { notify(error.message); } };
     loadPosts();
 </script>
 </body>

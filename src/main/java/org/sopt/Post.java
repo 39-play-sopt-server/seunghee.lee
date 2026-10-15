@@ -10,6 +10,7 @@ public class Post {
     private String content;
     private final String author;
     private Category category;
+    private final AtomicLong viewCount = new AtomicLong();
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,6 +33,7 @@ public class Post {
     public String getContent() { return content; }
     public String getAuthor() { return author; }
     public Category getCategory() { return category; }
+    public long getViewCount() { return viewCount.get(); }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -44,6 +46,10 @@ public class Post {
         this.content = content.trim();
         this.category = category;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void increaseViewCount() {
+        viewCount.incrementAndGet();
     }
 
     private void validateText(String value, String fieldName) {

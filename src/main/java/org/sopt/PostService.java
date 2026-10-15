@@ -1,7 +1,6 @@
 package org.sopt;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -18,31 +17,40 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public List<Post> findAll() { return postRepository.findAll(); }
-
-    public List<Post> search(PostSearchCondition condition) {
+    public List<Post> findAll(Category category) {
         return postRepository.findAll().stream()
-                .filter(post -> condition.getKeyword() == null
-                        || condition.getKeyword().isBlank()
-                        || post.getTitle().contains(condition.getKeyword())
-                        || post.getContent().contains(condition.getKeyword()))
-                .filter(post -> condition.getCategory() == null
-                        || post.getCategory() == condition.getCategory())
-                .collect(Collectors.toList());
+                .filter(post -> category == null || post.getCategory() == category)
+                .toList();
     }
-    public Post findById(Long id) { return postRepository.findById(id); }
+
+    public Post findById(Long id) { return getPostOrThrow(id); }
+
+    public Post findDetail(Long id) {
+        Post post = getPostOrThrow(id);
+        post.increaseViewCount();
+        return post;
+    }
 
     public Post update(Long id, PostRequest request) {
-        Post post = postRepository.findById(id);
+        Post post = getPostOrThrow(id);
         post.update(request.title(), request.content(), request.category());
         return post;
     }
 
-    public void delete(Long id) { postRepository.delete(id); }
+    public void delete(Long id) {
+        if (!postRepository.delete(id)) {
+            throw new PostNotFoundException();
+        }
+    }
 
     public Post updateCategory(Long id, Category category) {
-        Post post = postRepository.findById(id);
+        Post post = getPostOrThrow(id);
         post.update(post.getTitle(), post.getContent(), category);
         return post;
+    }
+
+    private Post getPostOrThrow(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(PostNotFoundException::new);
     }
 }

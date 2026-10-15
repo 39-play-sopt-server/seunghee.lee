@@ -3,6 +3,7 @@ package org.sopt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Repository;
@@ -18,13 +19,11 @@ public class PostRepository {
 
     public List<Post> findAll() { return new ArrayList<>(posts.values()); }
 
-    public Post findById(Long id) {
-        Post post = posts.get(id);
-        if (post == null) throw new PostNotFoundException();
-        return post;
+    public Optional<Post> findById(Long id) {
+        return Optional.ofNullable(posts.get(id));
     }
 
-    public void delete(Long id) {
-        if (posts.remove(id) == null) throw new PostNotFoundException();
+    public boolean delete(Long id) {
+        return posts.remove(id) != null;
     }
 }
