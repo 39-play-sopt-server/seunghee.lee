@@ -1,55 +1,70 @@
 package org.sopt;
 
-public class PostController {
-    private final PostService service;
-    private final PostView view;
+import java.util.Arrays;
+import java.util.List;
 
-    public PostController(PostService service, PostView view) {
-        this.service = service;
-        this.view = view;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/posts")
+public class PostController implements PostApi {
+    private final PostService postService;
+
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
-    public void run() {
-        while (true) {
-            try {
-                view.printMenu();
-                int command = view.readCommand();
-                switch (command) {
-                    case 1 -> createPost();
-                    case 2 -> view.printPosts(service.findAll());
-                    case 3 -> readPost();
-                    case 4 -> updatePost();
-                    case 5 -> deletePost();
-                    case 6 -> { view.printMessage("프로그램을 종료합니다."); return; }
-                    default -> view.printMessage("잘못된 입력입니다.");
-                }
-            } catch (NumberFormatException exception) {
-                view.printMessage("숫자 형식의 입력을 사용해주세요.");
-            } catch (PostNotFoundException | InvalidPostException exception) {
-                view.printMessage(exception.getMessage());
-            }
-        }
+    @Override
+    public ResponseEntity<ApiResponse<PostResponse>> create(PostRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        PostResponse.from(postService.create(request)),
+                        "게시글이 작성되었습니다."
+                ));
     }
 
-    private void createPost() {
-        service.create(view.readTitle(), view.readContent(), view.readAuthor(), view.readCategory());
-        view.printMessage("게시글이 작성되었습니다.");
+    @Override
+    public ResponseEntity<ApiResponse<List<PostResponse>>> findAll(Category category) {
+        List<PostResponse> responses = postService.findAll(category).stream()
+                .map(PostResponse::from)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
-    private void readPost() {
-        Long id = view.readPostId("조회할 게시글 번호: ");
-        view.printPost(service.findById(id));
+    @Override
+    public ResponseEntity<ApiResponse<List<Category>>> findCategories() {
+        return ResponseEntity.ok(ApiResponse.success(Arrays.asList(Category.values())));
     }
 
-    private void updatePost() {
-        Long id = view.readPostId("수정할 게시글 번호: ");
-        service.update(id, view.readTitle(), view.readContent(), view.readCategory());
-        view.printMessage("게시글이 수정되었습니다.");
+    @Override
+    public ResponseEntity<ApiResponse<PostResponse>> findById(Long id) {
+        return ResponseEntity.ok(ApiResponse.success(
+                PostResponse.from(postService.findDetail(id))
+        ));
     }
 
-    private void deletePost() {
-        Long id = view.readPostId("삭제할 게시글 번호: ");
-        service.delete(id);
-        view.printMessage("게시글이 삭제되었습니다.");
+    @Override
+    public ResponseEntity<ApiResponse<PostResponse>> update(Long id, PostRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(
+                PostResponse.from(postService.update(id, request)),
+                "게시글이 수정되었습니다."
+        ));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<PostResponse>> updateCategory(Long id, Category category) {
+        return ResponseEntity.ok(ApiResponse.success(
+                PostResponse.from(postService.updateCategory(id, category)),
+                "카테고리가 수정되었습니다."
+        ));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> delete(Long id) {
+        postService.delete(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "게시글이 삭제되었습니다."));
     }
 }

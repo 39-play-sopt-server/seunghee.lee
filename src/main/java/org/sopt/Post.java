@@ -10,6 +10,7 @@ public class Post {
     private String content;
     private final String author;
     private Category category;
+    private final AtomicLong viewCount = new AtomicLong();
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -19,9 +20,9 @@ public class Post {
         validateText(author, "작성자");
         validateCategory(category);
         this.id = ID_GENERATOR.getAndIncrement();
-        this.title = title.trim();
-        this.content = content.trim();
-        this.author = author.trim();
+        this.title = title.strip();
+        this.content = content.strip();
+        this.author = author.strip();
         this.category = category;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = createdAt;
@@ -32,6 +33,7 @@ public class Post {
     public String getContent() { return content; }
     public String getAuthor() { return author; }
     public Category getCategory() { return category; }
+    public long getViewCount() { return viewCount.get(); }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -40,14 +42,18 @@ public class Post {
         validateText(title, "제목");
         validateText(content, "본문");
         validateCategory(category);
-        this.title = title.trim();
-        this.content = content.trim();
+        this.title = title.strip();
+        this.content = content.strip();
         this.category = category;
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void increaseViewCount() {
+        viewCount.incrementAndGet();
+    }
+
     private void validateText(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
+        if (value == null || value.strip().isEmpty()) {
             throw new InvalidPostException(fieldName + "은(는) 비어 있을 수 없습니다.");
         }
     }

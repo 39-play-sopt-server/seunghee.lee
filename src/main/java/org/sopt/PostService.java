@@ -2,32 +2,55 @@ package org.sopt;
 
 import java.util.List;
 
-// Service 계층: 게시글과 관련된 비즈니스 흐름을 담당한다.
+import org.springframework.stereotype.Service;
+
+@Service
 public class PostService {
-    private final PostRepository repository;
+    private final PostRepository postRepository;
 
-    public PostService(PostRepository repository) {
-        this.repository = repository;
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
     }
 
-    public void create(String title, String content, String author, Category category) {
-        repository.save(new Post(title, content, author, category));
+    public Post create(PostRequest request) {
+        Post post = new Post(request.title(), request.content(), request.author(), request.category());
+        return postRepository.save(post);
     }
 
-    public List<Post> findAll() {
-        return repository.findAll();
+    public List<Post> findAll(Category category) {
+        return postRepository.findAll().stream()
+                .filter(post -> category == null || post.getCategory() == category)
+                .toList();
     }
 
-    public Post findById(Long id) {
-        return repository.findById(id);
+    public Post findById(Long id) { return getPostOrThrow(id); }
+
+    public Post findDetail(Long id) {
+        Post post = getPostOrThrow(id);
+        post.increaseViewCount();
+        return post;
     }
 
-    public void update(Long id, String title, String content, Category category) {
-        Post post = repository.findById(id);
-        post.update(title, content, category);
+    public Post update(Long id, PostRequest request) {
+        Post post = getPostOrThrow(id);
+        post.update(request.title(), request.content(), request.category());
+        return post;
     }
 
     public void delete(Long id) {
-        repository.delete(id);
+        if (!postRepository.delete(id)) {
+            throw new PostNotFoundException();
+        }
+    }
+
+    public Post updateCategory(Long id, Category category) {
+        Post post = getPostOrThrow(id);
+        post.update(post.getTitle(), post.getContent(), category);
+        return post;
+    }
+
+    private Post getPostOrThrow(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(PostNotFoundException::new);
     }
 }
