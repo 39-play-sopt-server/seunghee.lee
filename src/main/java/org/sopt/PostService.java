@@ -3,6 +3,7 @@ package org.sopt;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PostService {
@@ -25,12 +26,14 @@ public class PostService {
 
     public Post findById(Long id) { return getPostOrThrow(id); }
 
+    @Transactional
     public Post findDetail(Long id) {
         Post post = getPostOrThrow(id);
         post.increaseViewCount();
         return post;
     }
 
+    @Transactional
     public Post update(Long id, PostRequest request) {
         Post post = getPostOrThrow(id);
         post.update(request.title(), request.content(), request.category());
@@ -38,14 +41,24 @@ public class PostService {
     }
 
     public void delete(Long id) {
-        if (!postRepository.delete(id)) {
-            throw new PostNotFoundException();
-        }
+        Post post = getPostOrThrow(id);
+        postRepository.deleteById(post.getId());
     }
 
+    @Transactional
     public Post updateCategory(Long id, Category category) {
         Post post = getPostOrThrow(id);
         post.update(post.getTitle(), post.getContent(), category);
+        return post;
+    }
+
+    @Transactional
+    public Post updatePostTitle(Long id, String title) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(PostNotFoundException::new);
+
+        post.updateTitle(title);
+
         return post;
     }
 

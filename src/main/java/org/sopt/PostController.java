@@ -63,6 +63,14 @@ public class PostController implements PostApi {
     }
 
     @Override
+    public ResponseEntity<ApiResponse<PostResponse>> updateTitle(Long id, String title) {
+        return ResponseEntity.ok(ApiResponse.success(
+                PostResponse.from(postService.updatePostTitle(id, title)),
+                "게시글 제목이 수정되었습니다."
+        ));
+    }
+
+    @Override
     public ResponseEntity<ApiResponse<Void>> delete(Long id) {
         postService.delete(id);
         return ResponseEntity.ok(ApiResponse.success(null, "게시글이 삭제되었습니다."));

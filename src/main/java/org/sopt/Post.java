@@ -1,29 +1,58 @@
 package org.sopt;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.atomic.AtomicLong;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
 public class Post {
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
-    private final Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-    private final String author;
+
+    @Column(nullable = false)
+    private String author;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Category category;
-    private final AtomicLong viewCount = new AtomicLong();
-    private final LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private long viewCount;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    // JPA가 Entity를 생성할 때 사용하는 기본 생성자
+    protected Post() {
+    }
 
     public Post(String title, String content, String author, Category category) {
         validateText(title, "제목");
         validateText(content, "본문");
         validateText(author, "작성자");
         validateCategory(category);
-        this.id = ID_GENERATOR.getAndIncrement();
+
         this.title = title.strip();
         this.content = content.strip();
         this.author = author.strip();
         this.category = category;
+        this.viewCount = 0;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = createdAt;
     }
@@ -33,23 +62,29 @@ public class Post {
     public String getContent() { return content; }
     public String getAuthor() { return author; }
     public Category getCategory() { return category; }
-    public long getViewCount() { return viewCount.get(); }
+    public long getViewCount() { return viewCount; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    // 게시글의 상태 변경 책임은 Model인 Post가 갖는다.
     public void update(String title, String content, Category category) {
         validateText(title, "제목");
         validateText(content, "본문");
         validateCategory(category);
+
         this.title = title.strip();
         this.content = content.strip();
         this.category = category;
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateTitle(String title) {
+        validateText(title, "제목");
+        this.title = title.strip();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void increaseViewCount() {
-        viewCount.incrementAndGet();
+        viewCount++;
     }
 
     private void validateText(String value, String fieldName) {

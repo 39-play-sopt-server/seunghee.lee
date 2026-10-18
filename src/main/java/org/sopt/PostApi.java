@@ -49,6 +49,13 @@ public interface PostApi {
             @RequestParam Category category
     );
 
+    @Operation(summary = "게시글 제목 수정")
+    @PatchMapping("/{id}/title")
+    ResponseEntity<ApiResponse<PostResponse>> updateTitle(
+            @PathVariable Long id,
+            @RequestParam String title
+    );
+
     @Operation(summary = "게시글 삭제")
     @DeleteMapping("/{id}")
     ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id);
