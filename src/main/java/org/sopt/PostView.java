@@ -60,12 +60,12 @@ public class PostView {
         return Long.parseLong(scanner.nextLine());
     }
 
-    public void printPost(Post post) {
+    public void printPost(PostResponse post) {
         System.out.println("\n=== 게시글 ===");
         System.out.println("제목: " + post.getTitle());
         System.out.println("내용: " + post.getContent());
         System.out.println("작성자: " + post.getAuthor());
-        System.out.println("카테고리: " + post.getCategory().getDisplayName());
+        System.out.println("카테고리: " + post.getCategory());
         System.out.println("작성일: " + post.getCreatedAt().format(formatter));
         System.out.println("수정일: " + post.getUpdatedAt().format(formatter));
     }
