@@ -1,6 +1,7 @@
 package org.sopt;
 
 import java.util.List;
+import java.util.Optional;
 
 // Service 계층: 게시글과 관련된 비즈니스 흐름을 담당한다.
 public class PostService {
@@ -19,11 +20,12 @@ public class PostService {
     }
 
     public Post findById(Long id) {
-        return repository.findById(id);
+        return repository.findById(id)
+                         .orElseThrow(PostNotFoundException::new);
     }
 
     public void update(Long id, String title, String content, Category category) {
-        Post post = repository.findById(id);
+        Post post = this.findById(id);
         post.update(title, content, category);
     }
 
