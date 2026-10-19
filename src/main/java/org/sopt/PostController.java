@@ -38,7 +38,7 @@ public class PostController {
 
     private void readPost() {
         Long id = view.readPostId("조회할 게시글 번호: ");
-        view.printPost(service.findById(id));
+        view.printPost(service.findPostById(id));
     }
 
     private void updatePost() {
