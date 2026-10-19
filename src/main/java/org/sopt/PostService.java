@@ -24,6 +24,11 @@ public class PostService {
                          .orElseThrow(PostNotFoundException::new);
     }
 
+    public PostResponse findPostById(Long id) {
+        Post post = findById(id);
+        return new PostResponse(post);
+    }
+
     public void update(Long id, String title, String content, Category category) {
         Post post = this.findById(id);
         post.update(title, content, category);
