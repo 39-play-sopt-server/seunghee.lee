@@ -12,7 +12,9 @@ public class PostService {
     }
 
     public void create(String title, String content, String author, Category category) {
-        repository.save(new Post(title, content, author, category));
+        Long id = repository.generatedId();
+        Post post = new Post(id, title, content, author, category);
+        repository.save(post);
     }
 
     public List<Post> findAll() {
@@ -28,6 +30,7 @@ public class PostService {
         Post post = findById(id);
         return new PostResponse(post);
     }
+
 
     public void update(Long id, String title, String content, Category category) {
         Post post = this.findById(id);

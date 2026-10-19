@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Post {
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
     private final Long id;
     private String title;
     private String content;
@@ -13,12 +12,12 @@ public class Post {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Post(String title, String content, String author, Category category) {
+    public Post(Long id, String title, String content, String author, Category category) {
         validateText(title, "제목");
         validateText(content, "본문");
         validateText(author, "작성자");
         validateCategory(category);
-        this.id = ID_GENERATOR.getAndIncrement();
+        this.id = id;
         this.title = title.trim();
         this.content = content.trim();
         this.author = author.trim();
