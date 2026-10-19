@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 
 public class PostView {
     private final Scanner scanner = new Scanner(System.in);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     // View 출력
     public void printMenu() {
@@ -39,7 +40,11 @@ public class PostView {
     }
 
     public Category readCategory() {
-        System.out.println("카테고리: 1. 공지  2. 자유  3. 질문  4. 정보");
+        Category[] categories = Category.values();
+        System.out.println("카테고리: ");
+        for (int i = 0; i < categories.length; i++) {
+            System.out.println((i + 1) + ". " + categories[i].getDisplayName());
+            }
         System.out.print("선택: ");
         return switch (Integer.parseInt(scanner.nextLine())) {
             case 1 -> Category.NOTICE;
@@ -61,7 +66,6 @@ public class PostView {
         System.out.println("내용: " + post.getContent());
         System.out.println("작성자: " + post.getAuthor());
         System.out.println("카테고리: " + post.getCategory().getDisplayName());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         System.out.println("작성일: " + post.getCreatedAt().format(formatter));
         System.out.println("수정일: " + post.getUpdatedAt().format(formatter));
     }
