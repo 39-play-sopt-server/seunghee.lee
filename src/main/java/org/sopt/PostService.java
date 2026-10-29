@@ -1,56 +1,9 @@
 package org.sopt;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-@Service
-public class PostService {
-    private final PostRepository postRepository;
-
-    public PostService(PostRepository postRepository) {
-        this.postRepository = postRepository;
-    }
-
-    public Post create(PostRequest request) {
-        Post post = new Post(request.title(), request.content(), request.author(), request.category());
-        return postRepository.save(post);
-    }
-
-    public List<Post> findAll(Category category) {
-        return postRepository.findAll().stream()
-                .filter(post -> category == null || post.getCategory() == category)
-                .toList();
-    }
-
-    public Post findById(Long id) { return getPostOrThrow(id); }
-
-    public Post findDetail(Long id) {
-        Post post = getPostOrThrow(id);
-        post.increaseViewCount();
-        return post;
-    }
-
-    public Post update(Long id, PostRequest request) {
-        Post post = getPostOrThrow(id);
-        post.update(request.title(), request.content(), request.category());
-        return post;
-    }
-
-    public void delete(Long id) {
-        if (!postRepository.delete(id)) {
-            throw new PostNotFoundException();
-        }
-    }
-
-    public Post updateCategory(Long id, Category category) {
-        Post post = getPostOrThrow(id);
-        post.update(post.getTitle(), post.getContent(), category);
-        return post;
-    }
-
-    private Post getPostOrThrow(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(PostNotFoundException::new);
-    }
+import org.springframework.data.domain.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional;
+@Service @Transactional public class PostService {
+ private final PostRepository postRepository; private final MemberService memberService;
+ public PostService(PostRepository p,MemberService m){postRepository=p;memberService=m;}
+ public Post create(PostRequest r){return postRepository.save(new Post(r.title(),r.content(),memberService.find(r.memberId()),r.category()));}
+ @Transactional(readOnly=true) public Page<Post> findAll(Category c,Pageable p){return c==null?postRepository.findAll(p):postRepository.findByCategory(c,p);}
+ public Post findDetail(Long id){Post p=get(id);p.increaseViewCount();return p;} public Post update(Long id,PostRequest r){Post p=get(id);p.update(r.title(),r.content(),r.category());return p;} public void delete(Long id){postRepository.delete(get(id));} public Post updateCategory(Long id,Category c){Post p=get(id);p.update(p.getTitle(),p.getContent(),c);return p;} private Post get(Long id){return postRepository.findById(id).orElseThrow(PostNotFoundException::new);}
 }

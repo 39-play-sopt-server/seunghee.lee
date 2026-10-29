@@ -1,5 +1,7 @@
 package org.sopt;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -23,8 +25,8 @@ public interface PostApi {
 
     @Operation(summary = "게시글 목록 조회", description = "category를 전달하면 해당 카테고리만 조회합니다.")
     @GetMapping
-    ResponseEntity<ApiResponse<List<PostResponse>>> findAll(
-            @RequestParam(required = false) Category category
+    ResponseEntity<ApiResponse<Page<PostResponse>>> findAll(
+            @RequestParam(required = false) Category category, Pageable pageable
     );
 
     @Operation(summary = "카테고리 목록 조회")
