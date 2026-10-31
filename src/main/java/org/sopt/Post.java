@@ -1,66 +1,18 @@
 package org.sopt;
+import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-import java.util.concurrent.atomic.AtomicLong;
-
-public class Post {
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
-    private final Long id;
-    private String title;
-    private String content;
-    private final String author;
-    private Category category;
-    private final AtomicLong viewCount = new AtomicLong();
-    private final LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    public Post(String title, String content, String author, Category category) {
-        validateText(title, "제목");
-        validateText(content, "본문");
-        validateText(author, "작성자");
-        validateCategory(category);
-        this.id = ID_GENERATOR.getAndIncrement();
-        this.title = title.strip();
-        this.content = content.strip();
-        this.author = author.strip();
-        this.category = category;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = createdAt;
-    }
-
-    public Long getId() { return id; }
-    public String getTitle() { return title; }
-    public String getContent() { return content; }
-    public String getAuthor() { return author; }
-    public Category getCategory() { return category; }
-    public long getViewCount() { return viewCount.get(); }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    // 게시글의 상태 변경 책임은 Model인 Post가 갖는다.
-    public void update(String title, String content, Category category) {
-        validateText(title, "제목");
-        validateText(content, "본문");
-        validateCategory(category);
-        this.title = title.strip();
-        this.content = content.strip();
-        this.category = category;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void increaseViewCount() {
-        viewCount.incrementAndGet();
-    }
-
-    private void validateText(String value, String fieldName) {
-        if (value == null || value.strip().isEmpty()) {
-            throw new InvalidPostException(fieldName + "은(는) 비어 있을 수 없습니다.");
-        }
-    }
-
-    private void validateCategory(Category category) {
-        if (category == null) {
-            throw new InvalidPostException("카테고리는 필수입니다.");
-        }
-    }
+@Entity
+public class Post extends BaseEntity {
+    @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
+    @Column(nullable=false) private String title;
+    @Column(nullable=false, columnDefinition="TEXT") private String content;
+    @ManyToOne(fetch=FetchType.LAZY, optional=false) @JoinColumn(name="member_id", nullable=false) private Member author;
+    @Enumerated(EnumType.STRING) @Column(nullable=false) private Category category;
+    @Column(nullable=false) private long viewCount;
+    protected Post() {}
+    public Post(String title,String content,Member author,Category category) { validate(title,content,author,category); this.title=title.strip(); this.content=content.strip(); this.author=author; this.category=category; }
+    public Long getId(){return id;} public String getTitle(){return title;} public String getContent(){return content;} public Member getAuthor(){return author;} public Category getCategory(){return category;} public long getViewCount(){return viewCount;}
+    public void increaseViewCount(){viewCount++;}
+    public void update(String title,String content,Category category){validate(title,content,author,category);this.title=title.strip();this.content=content.strip();this.category=category;}
+    private void validate(String title,String content,Member author,Category category){if(title==null||title.isBlank())throw new InvalidPostException("제목은 비어 있을 수 없습니다.");if(content==null||content.isBlank())throw new InvalidPostException("본문은 비어 있을 수 없습니다.");if(author==null)throw new InvalidPostException("작성자는 필수입니다.");if(category==null)throw new InvalidPostException("카테고리는 필수입니다.");}
 }

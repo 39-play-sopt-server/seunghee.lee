@@ -2,6 +2,7 @@ package org.sopt;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.data.domain.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +28,8 @@ public class PostController implements PostApi {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<List<PostResponse>>> findAll(Category category) {
-        List<PostResponse> responses = postService.findAll(category).stream()
-                .map(PostResponse::from)
-                .toList();
+    public ResponseEntity<ApiResponse<Page<PostResponse>>> findAll(Category category, Pageable pageable) {
+        Page<PostResponse> responses = postService.findAll(category, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"))).map(PostResponse::from);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

@@ -20,6 +20,16 @@ public class PostExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.failure(exception.getMessage()));
     }
 
+    @ExceptionHandler(InvalidMemberException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidMember(InvalidMemberException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.failure(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMemberNotFound(MemberNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.failure(exception.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception exception) {
         return ResponseEntity.badRequest().body(ApiResponse.failure("잘못된 요청입니다."));

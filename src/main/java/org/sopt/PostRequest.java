@@ -1,4 +1,4 @@
 package org.sopt;
 
-public record PostRequest(String title, String content, String author, Category category) {
+public record PostRequest(String title, String content, Long memberId, Category category) {
 }
