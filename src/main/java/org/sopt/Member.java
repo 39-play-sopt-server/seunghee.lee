@@ -23,6 +23,10 @@ public class Member extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
+    private String refreshTokenHash;
+
+    private LocalDateTime refreshTokenExpiresAt;
+
     protected Member() { }
 
     public Member(String name, String email, String password) {
@@ -46,4 +50,22 @@ public class Member extends BaseEntity {
     public boolean isDeleted() { return deletedAt != null; }
     public String getDisplayName() { return isDeleted() ? "탈퇴한 회원" : name; }
     public void withdraw() { this.deletedAt = LocalDateTime.now(); }
+
+    public void saveRefreshToken(String refreshTokenHash, LocalDateTime expiresAt) {
+        this.refreshTokenHash = refreshTokenHash;
+        this.refreshTokenExpiresAt = expiresAt;
+    }
+
+    public boolean hasValidRefreshToken(String refreshTokenHash, LocalDateTime now) {
+        return !isDeleted()
+                && this.refreshTokenHash != null
+                && this.refreshTokenHash.equals(refreshTokenHash)
+                && refreshTokenExpiresAt != null
+                && refreshTokenExpiresAt.isAfter(now);
+    }
+
+    public void clearRefreshToken() {
+        this.refreshTokenHash = null;
+        this.refreshTokenExpiresAt = null;
+    }
 }
