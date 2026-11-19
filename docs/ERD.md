@@ -6,6 +6,8 @@ erDiagram
     MEMBER {
         bigint id PK
         varchar name UK
+        varchar email UK
+        varchar password
         datetime deleted_at
         datetime created_at
         datetime updated_at
