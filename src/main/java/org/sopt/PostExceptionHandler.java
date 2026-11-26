@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import io.jsonwebtoken.JwtException;
 
 @RestControllerAdvice
 public class PostExceptionHandler {
@@ -28,6 +29,12 @@ public class PostExceptionHandler {
     @ExceptionHandler(MemberNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleMemberNotFound(MemberNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.failure(exception.getMessage()));
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiResponse<Void>> handleJwtException(JwtException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.failure("유효하지 않은 토큰입니다."));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
